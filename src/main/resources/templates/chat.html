@@ -1,0 +1,193 @@
+<html>
+   <head>
+	    </head>
+	<body onload="disconnect();">
+	
+     </body>
+ </html>
+ 
+<!DOCTYPE html>
+<html>
+<head>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">        
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+  
+  <title>Chat WebSocket</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.3.0/sockjs.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+	<script type="text/javascript">
+		var stompClient = null;
+			function setConnected(connected) {
+				document.getElementById('connect').disabled = connected;
+				document.getElementById('disconnect').disabled = !connected;
+				document.getElementById('conversationDiv').style.visibility = connected?'visible':'hidden';
+				document.getElementById('response').innerHTML = '';
+			}
+
+	function connect() {
+		var socket = new SockJS('/chat');
+		stompClient = Stomp.over(socket);
+		stompClient.connect({}, function(frame) {
+			setConnected(true);
+			console.log('Connected: ' + frame);
+			stompClient.subscribe('/topic/messages', function(messageOutput) {
+				showMessageOutput(JSON.parse(messageOutput.body));
+				});
+			});
+		}
+		
+		function disconnect(){
+			if(stompClient != null) {
+				stompClient.disconnect();
+			}
+			setConnected(false);
+			console.log("Disconnected");
+		}
+		
+		function sendMessage() {
+			var from = document.getElementById('from').value;
+			var text = document.getElementById('text').value;
+			document.getElementById('text').value='';
+			stompClient.send("/app/chat", {},
+					JSON.stringify({'from':from, 'text':text}));
+			}
+		
+		function showMessageOutput(messageOutput) {
+			var response = document.getElementById('response');
+			var p = document.createElement('p');
+			p.style.wordWrap = 'break-word';
+			p.appendChild(document.createTextNode(messageOutput.from + "["+messageOutput.time+"]: "
+					+ messageOutput.text));
+			 response.appendChild(p);
+		}
+	</script>
+  
+  
+  <style type="text/css">
+     .bg-content {
+          background-color: white;
+     }
+     .bg-top-menu {
+       background-color: #85C1E9; /**/
+       text-align: left;
+      background-image: linear-gradient(blue, white, green);
+      border-radius: 0% 0% 0% 0%;
+     }
+     .bg-left-header {
+       background-color: #93c3c6; /*b6f2a4*/
+       background-image: linear-gradient(to right, rgba(255,100,0,0), rgba(0,150,0,1));
+       
+     }
+     .top-menu-text {
+      color: #0910e5;
+      font-weight: bold;
+     }
+     .navbar-header {
+      /*border : 2px solid gray;*/
+     }
+     .bg-header {
+      background-color: #3498DB; /**/
+      background-image: linear-gradient(blue, white, pink);
+      border-radius: 2%;
+     }
+     .bg-body {
+      background-color: #3498DB; 
+
+     }
+
+     .bg-footer {
+      background-image: repeating-linear-gradient(blue, yellow 10%, green 100%);
+     }
+     .container {
+      max-width: 100%;
+      padding: 0px;
+     }
+     .padding-0 {
+      padding: 2px;
+     }
+
+     @keyframes blink{
+      0%{opacity: 0;}
+      50%{opacity: .5;}
+      100%{opacity: 1;}
+    }
+    .blink{
+    width:200px;
+    height: 50px;
+    padding: 15px;  
+    text-align: center;
+    line-height: 50px;
+  }
+  .blink-text{
+    font-size: 25px;
+    font-family: cursive;
+    color: green;
+    animation: blink 3s linear infinite;
+  }
+
+  .bg-breadcrumb {
+    background-image: linear-gradient(to right, rgba(250,150,0,0), rgba(50,150,0,1));    
+   }
+
+   .screen-height {
+    min-height: 80vh;
+   }
+     
+  </style>
+</head>
+<body class="bg-body" onload="disconnect();">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-12 col-md-12 col-lg-12 col-xl-12">
+              <div class=" bg-header">	  
+			  		<div class="row">
+		        		<div class="col-sm-2 col-md-2 col-lg-2 col-xl-2">          
+		             		Demo
+		        		</div>
+		        		<div class="col-sm-10 col-md-10 col-lg-10 col-xl-10 blink" style="text-align: center;color: #F0A0A0;font-style: italic;">        
+		          			<h4 class="blink-text">Demo Project</h4>
+		        		</div>
+		      		</div>
+				</div> 
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col-sm-12 col-md-12 col-lg-12 col-xl-12">
+          <nav class = "navbar bg-gradient-primary bg-top-menu" role = "navigation">   
+			   <div class = "navbar-header">
+			      <a href = "/" class="top-menu-text">USERS</a>
+			      &nbsp;&nbsp;
+			      <a class="top-menu-text" href = "/chat">CHAT</a>
+			   </div>			    
+			</nav>
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col-sm-12 col-md-12 col-lg-12 col-xl-12 padding-0 bg-content">          
+          <div style="margin-left:20%;width:60%;">
+			<div><a></a><input type="text" id="from" placeholder="Choose a nickname"/></div>
+			<br />
+			<div>
+			<button id="connect" onclick="connect();">Connect</button>
+			<button id="disconnect" disabled="disabled" onclick="disconnect();">Disconnect</button>
+			</div>
+			<br />
+			<div id="conversationDiv">				
+				<p id="response"></p>
+				<input type="text" id="text" placeholder="Write a message..."/>
+				<button id="sendMessage" onclick="sendMessage();">Send</button>
+			</div>
+		 </div>
+          
+        </div>
+      </div>
+</div>
+</body>
+</html>
+ 
