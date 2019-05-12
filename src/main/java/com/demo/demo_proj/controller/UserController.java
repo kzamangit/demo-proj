@@ -34,6 +34,11 @@ public class UserController {
 		return "chat";
 	}
 	
+	@GetMapping("/chat1")
+	public String chat() {
+		return "chat";
+	}
+	
 	@GetMapping("/user/create")
 	 public String newUser(Model model) {
 		    model.addAttribute("user",new User());
